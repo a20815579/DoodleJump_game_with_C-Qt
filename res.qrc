@@ -1,0 +1,27 @@
+<RCC>
+    <qresource prefix="/">
+        <file>res/background.png</file>
+        <file>res/black_hole.png</file>
+        <file>res/bullet.png</file>
+        <file>res/doodler_attack.png</file>
+        <file>res/doodler_left1.png</file>
+        <file>res/doodler_right1.png</file>
+        <file>res/monster.png</file>
+        <file>res/platform_blue.png</file>
+        <file>res/platform_brown.png</file>
+        <file>res/platform_green.png</file>
+        <file>res/shield.png</file>
+        <file>res/platform_gray.png</file>
+        <file>res/rocket_left.png</file>
+        <file>res/rocket_right.png</file>
+        <file>res/jetpack.png</file>
+        <file>res/monster2.png</file>
+        <file>res/monster3_left.png</file>
+        <file>res/monster3_right.png</file>
+        <file>res/dead_left.png</file>
+        <file>res/dead_right.png</file>
+        <file>res/spring3.png</file>
+        <file>res/sheild_left.png</file>
+        <file>res/sheild_right.png</file>
+    </qresource>
+</RCC>

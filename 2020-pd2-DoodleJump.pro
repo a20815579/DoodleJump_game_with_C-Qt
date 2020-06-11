@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT += testlib
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,16 +26,42 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
+        blackhole.cpp \
+        blueplatform.cpp \
+        bullet.cpp \
+        doodler.cpp \
+        grayplatform.cpp \
+        greenplatform.cpp \
+        jetpack.cpp \
         main.cpp \
-        mainwindow.cpp
+        monster.cpp \
+        monster2.cpp \
+        monster3.cpp \
+        myobject.cpp \
+        protectshield.cpp \
+        spring.cpp
 
 HEADERS += \
-        mainwindow.h
+        blackhole.h \
+        blueplatform.h \
+        bullet.h \
+        doodler.h \
+        grayplatform.h \
+        greenplatform.h \
+        jetpack.h \
+        monster.h \
+        monster2.h \
+        monster3.h \
+        myobject.h \
+        protectshield.h \
+        spring.h
 
-FORMS += \
-        mainwindow.ui
+FORMS +=
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    res.qrc
