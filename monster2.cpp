@@ -15,7 +15,7 @@ void Monster2::repeatMove() {
     else
         move_frame++;
     if(move_frame < 7)
-        setX(x()+8);
+        setX(x()+6);
     else
-        setX(x()-8);
+        setX(x()-6);
 }

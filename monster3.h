@@ -8,7 +8,7 @@ class Monster3 : public Monster
 public:
     Monster3(int x, int y, QGraphicsItem *doodle);
 public slots:
-    void repeatMove();
+    virtual void repeatMove();
 private:
     int direction = 0;
     QPixmap pic2;

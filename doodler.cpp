@@ -2,14 +2,18 @@
 
 Doodler::Doodler()
 {
-    pic_right.load(":/res/doodler_right3.png");
+    pic_right.load(":/res/doodler_right.png");
     pic_right = pic_right.scaled(110,80,Qt::KeepAspectRatio);
-    pic_left.load(":/res/doodler_left3.png");
+    pic_left.load(":/res/doodler_left.png");
     pic_left = pic_left.scaled(110,80,Qt::KeepAspectRatio);
     rocket_right.load(":/res/rocket_right.png");
     rocket_right = rocket_right.scaled(110,110,Qt::KeepAspectRatio);
     rocket_left.load(":/res/rocket_left.png");
     rocket_left = rocket_left.scaled(110,110,Qt::KeepAspectRatio);
+    shield_right.load(":/res/shield_right.png");
+    shield_right = shield_right.scaled(110,110,Qt::KeepAspectRatio);
+    shield_left.load(":/res/shield_left.png");
+    shield_left = shield_left.scaled(110,110,Qt::KeepAspectRatio);
     pic_shoot.load(":/res/doodler_attack.png");
     pic_shoot = pic_shoot.scaled(110,80,Qt::KeepAspectRatio);
     this->setPixmap(pic_right);
@@ -17,9 +21,35 @@ Doodler::Doodler()
     this->setZValue(2);
     this->setFlag(QGraphicsItem::ItemIsFocusable);
     this->setFocus();
+
     point_text = new QGraphicsTextItem();
     point_text->setPlainText(QString("Point : ") + QString::number(point));
     point_text->setFont(QFont("Arial",16));
+    point_text->setZValue(1);
+    time_text = new QGraphicsTextItem();
+    time_text->setPlainText(QString("00 : 00"));
+    time_text->setFont(QFont("Arial",16));
+    time_text->setPos(0,30);
+    time_text->setZValue(1);
+
+    pause_icon.addFile(":/res/pause_button.png");
+    play_icon.addFile(":/res/play_button.png");
+    pause_button = new QPushButton();
+    pause_button->setIcon(pause_icon);
+    pause_button->setIconSize(QSize(28,28));
+    pause_button->setFlat(true);
+    pause_button->setGeometry(460,0,40,40);
+
+    pos_vec = {QPointF(0,0),QPointF(0,30),QPointF(460,0)};
+    timer2 = new QTimer(this);
+    connect(timer2,SIGNAL(timeout()),this,SLOT(timing()));
+    timer2->start(1000);
+}
+
+Doodler::~Doodler() {
+    delete timer;
+    delete point_text;
+    delete pause_button;
 }
 
 void Doodler::changePos() {
@@ -40,7 +70,12 @@ void Doodler::changePos() {
                 a = (60-jump_frame2)*3;
     }
     int down_dist;
-    if(this->y()-a > 350) {
+    if(this->y()-a > 800) {
+        disconnect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
+        emit gameOverSignal(point);
+        return;
+    }
+    else if(this->y()-a > 350) {
         this->setY(y()-a);
     }
     else {
@@ -61,6 +96,14 @@ void Doodler::changePos() {
 }
 
 void Doodler::addJump() {
+    if(is_shild) {
+        if(shield_frame == 300) {
+            shield_frame = 0;
+            is_shild = false;
+        }
+        else
+            shield_frame++;
+    }
     switch(up_state) {
         case 0:
             jump_frame++;
@@ -91,6 +134,8 @@ void Doodler::addJump() {
 void Doodler::moveRight() {
     if(up_state == 2)
         this->setPixmap(rocket_right);
+    else if(is_shild)
+        this->setPixmap(shield_right);
     else
         this->setPixmap(pic_right);
     if(x()+3 < 420) {
@@ -104,6 +149,8 @@ void Doodler::moveRight() {
 void Doodler::moveLeft() {
     if(up_state == 2)
         this->setPixmap(rocket_left);
+    else if(is_shild)
+        this->setPixmap(shield_left);
     else
         this->setPixmap(pic_left);
     if(x()-3 > 0) {
@@ -142,8 +189,11 @@ void Doodler::keyReleaseEvent (QKeyEvent *e)
     }
 }
 
-void Doodler::firstSpawn() {
+void Doodler::firstSpawn() {        
     scene()->addItem(point_text);
+    scene()->addItem(time_text);
+    scene()->addWidget(pause_button);
+    connect(pause_button,SIGNAL(clicked()),this,SLOT(clickPause()));
     timer = new QTimer();
     connect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
     timer->start(30);
@@ -156,6 +206,16 @@ void Doodler::firstSpawn() {
         if(!SpawnPlat(x, y))
             i--;
     }
+}
+
+bool Doodler::collideOtherPlat(QGraphicsItem *ptr) {
+    temp_list = ptr->collidingItems();
+    for(int i = 0; i < temp_list.length(); i++) {
+        if(!pos_vec.contains(temp_list.at(i)->scenePos())) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool Doodler::SpawnPlat(int x, int y) {
@@ -172,15 +232,12 @@ bool Doodler::SpawnPlat(int x, int y) {
         ptr = new Greenplatform(x,y);
     }
     scene()->addItem(ptr);
-    temp_list = ptr->collidingItems();
-    if(temp_list.length() != 0) {
-        //qDebug() << "fail";
+    if(collideOtherPlat(ptr)) {
         scene()->removeItem(ptr);
         delete ptr;
         return false;
     }
     else{
-        //qDebug() << "secuess";
         if(r > 2) {
             r1 = rand() % 20;
             if(r1 == 0) {
@@ -198,7 +255,7 @@ bool Doodler::SpawnPlat(int x, int y) {
 }
 
 void Doodler::newPlatform(int exceed_dist) {
-    int x, y, fail_time = 0;
+    int x, y, range;
     bool have_succeed = false;
     if(countPlatform() > platform_num)
         return;
@@ -206,13 +263,9 @@ void Doodler::newPlatform(int exceed_dist) {
         if(have_succeed)
             break;
         else {
-            fail_time++;
             x = rand() % 400;
-            y = rand() % (exceed_dist+1) + 40;
-            if(fail_time > 5) {
-                x = rand() % 250 + 150;
-                y = rand() % 10;
-            }
+            range = (exceed_dist>30)? exceed_dist : exceed_dist+30;
+            y = rand() % range;
             have_succeed = SpawnPlat(x, y);
         }
     }
@@ -233,15 +286,25 @@ void Doodler::checkCollide() {
             stepPlatform();
             break;
         }
+        else if(ptr->object_type == "BrownPlatform" && jump_frame > 17
+           && ptr->y() > last_y+75) {
+            delete ptr;
+        }
         else if(ptr->object_type == "Jetpack") {
             scene()->removeItem(ptr);
             delete ptr;
             touchJetpack();
             break;
         }
-        else if(ptr->object_type == "Monster") {
-            //qDebug() << "died";
-            break;
+        else if(ptr->object_type == "Hazard" && !is_shild) {
+            disconnect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
+            emit gameOverSignal(point);
+            return;
+        }
+        else if(ptr->object_type == "Shield") {
+            scene()->removeItem(ptr);
+            delete ptr;
+            touchShield();
         }
     }
 }
@@ -262,6 +325,7 @@ void Doodler::stepSpring() {
 void Doodler::touchJetpack(){
     QTest::qSleep(30);
     jump_frame = 17;
+    jump_frame2 = 0;
     up_state = 2;
     if(this->pixmap() == pic_right)
         this->setPixmap(rocket_right);
@@ -270,44 +334,83 @@ void Doodler::touchJetpack(){
     changePos();
 }
 
+void Doodler::touchShield() {
+    is_shild = true;
+    jump_frame2 = 0;
+    if(this->pixmap() == pic_right)
+        this->setPixmap(shield_right);
+    else
+        this->setPixmap(shield_left);
+}
+
 void Doodler::createItem() {
-    int relative_h = point % 6000;
-    int r;
-    if(5900 < relative_h && relative_h < 6000 && !create_rocket) {
+    int relative_h = point % 6500;
+    int r, r1;
+    if(6400 < relative_h && relative_h < 6500 && !create_rocket) {
         create_rocket = true;
         r = rand() % 400 + 20;
-        Jetpack *jet = new Jetpack(r,10);
+        Jetpack *jet = new Jetpack(r,0);
         jet->setZValue(1);
         scene()->addItem(jet);
         connect(this,SIGNAL(tooHigh(int)),jet,SLOT(moveDown(int)));
     }
-    if(0 < relative_h && relative_h < 100)
+    if(0 <= relative_h && relative_h < 100)
         create_rocket = false;
 
-//    relative_h = point % 4000;
-//    if(3900 < relative_h && relative_h < 4000 && !create_monster) {
-//        create_monster = true;
-//        r = rand() % 400;
-//        Monster *mon = new Monster(r,0,this);
-//        mon->setZValue(1);
-//        scene()->addItem(mon);
-//        connect(this,SIGNAL(tooHigh(int)),mon,SLOT(moveDown(int)));
-//    }
-//    if(0 < relative_h && relative_h < 100)
-//        create_monster = false;
-
-    relative_h = point % 1000;
-    if(900 < relative_h && relative_h < 1000 && !create_monster) {
-        create_monster = true;
-        r = rand() % 350;
-        Monster2 *mon2 = new Monster2(r,0,this);
-        mon2->setZValue(1);
-        scene()->addItem(mon2);
-        connect(this,SIGNAL(tooHigh(int)),mon2,SLOT(moveDown(int)));
-        connect(timer,SIGNAL(timeout()),mon2,SLOT(repeatMove()));
+    relative_h = point % 5000;
+    if(4900 < relative_h && relative_h < 5000 && !create_shield) {
+        create_shield = true;
+        r = rand() % 420 + 20;
+        Protectshield *shield = new Protectshield(r,0);
+        shield->setZValue(1);
+        scene()->addItem(shield);
+        connect(this,SIGNAL(tooHigh(int)),shield,SLOT(moveDown(int)));
     }
-    if(0 < relative_h && relative_h < 100)
-        create_monster = false;
+    if(0 <= relative_h && relative_h < 100)
+        create_shield = false;
+
+    relative_h = point % 300;
+    if(270 < relative_h && relative_h < 300 && !create_brown) {
+        create_brown = true;
+        r = rand() % 400;
+        BrownPlatform *brown = new BrownPlatform(r,0);
+        scene()->addItem(brown);
+        connect(this,SIGNAL(tooHigh(int)),brown,SLOT(moveDown(int)));
+    }
+    if(0 <= relative_h && relative_h < 30)
+        create_brown = false;
+
+    relative_h = point % 3000;
+    if(2900 < relative_h && relative_h < 3000 && !create_hazard) {
+        create_hazard = true;
+        r = rand() % 400;
+        r1 = rand() % 4;
+        if(!r1) {
+            Blackhole *hole = new Blackhole(r,0);
+            scene()->addItem(hole);
+            connect(this,SIGNAL(tooHigh(int)),hole,SLOT(moveDown(int)));
+        }
+        else {
+            Monster *mon;
+            switch(r1){
+                case 1:
+                    mon = new Monster(r,0,this);
+                    break;
+                case 2:
+                    mon = new Monster2(r,0,this);
+                    break;
+                case 3:
+                    mon = new Monster3(r,0,this);
+            }
+            scene()->addItem(mon);
+            connect(this,SIGNAL(tooHigh(int)),mon,SLOT(moveDown(int)));
+            connect(timer,SIGNAL(timeout()),mon,SLOT(repeatMove()));
+        }
+
+    }
+    if(0 <= relative_h && relative_h < 100)
+        create_hazard = false;
+
 }
 
 void Doodler::decidePlatNum() {
@@ -330,7 +433,7 @@ int Doodler::countPlatform() {
     QGraphicsItem *item_ptr;
     for(int i = 0; i < temp_list.length(); i++) {
         item_ptr = temp_list.at(i);
-        if(item_ptr != point_text && item_ptr != this) {
+        if(item_ptr != this && !pos_vec.contains(item_ptr->scenePos())) {
             my_ptr = static_cast<Myobject*>(item_ptr);
             if(my_ptr->object_type == "Platform")
                 count++;
@@ -345,3 +448,43 @@ void Doodler::shootBullet() {
     scene()->addItem(bullet);
     connect(timer,SIGNAL(timeout()),bullet,SLOT(fly()));
 }
+
+void Doodler::clickPause() {
+    if(!is_pause) {
+        is_pause = true;
+        disconnect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
+        pause_button->setIcon(play_icon);
+        this->clearFocus();
+    }
+    else {
+        is_pause = false;
+        connect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
+        pause_button->setIcon(pause_icon);
+        this->setFocus();
+    }
+}
+
+void Doodler::timing()
+{
+    if(second == 60) {
+        second = 0;
+        minute++;
+    }
+    else {
+        second++;
+    }
+    if(second < 10) {
+        second_text = QString::number(0) + QString::number(second);
+    }
+    else {
+        second_text = QString::number(second);
+    }
+    if(minute < 10) {
+        minute_text = QString::number(0) + QString::number(minute);
+    }
+    else {
+        minute_text = QString::number(minute);
+    }
+    time_text->setPlainText(minute_text + QString(" : ") + second_text);
+}
+

@@ -2,8 +2,8 @@
 
 Jetpack::Jetpack(int x, int y) : Myobject(x,y)
 {
-    w = 30;
-    h = 50;
+    w = 50;
+    h = 70;
     pic.load(":/res/jetpack.png");
     pic = pic.scaled(w,h,Qt::KeepAspectRatio);
     this->setPixmap(pic);

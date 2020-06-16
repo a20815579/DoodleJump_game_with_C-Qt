@@ -28,8 +28,10 @@ CONFIG += c++11
 SOURCES += \
         blackhole.cpp \
         blueplatform.cpp \
+        brownplatform.cpp \
         bullet.cpp \
         doodler.cpp \
+        game.cpp \
         grayplatform.cpp \
         greenplatform.cpp \
         jetpack.cpp \
@@ -44,8 +46,10 @@ SOURCES += \
 HEADERS += \
         blackhole.h \
         blueplatform.h \
+        brownplatform.h \
         bullet.h \
         doodler.h \
+        game.h \
         grayplatform.h \
         greenplatform.h \
         jetpack.h \

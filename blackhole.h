@@ -1,11 +1,12 @@
 #ifndef BLACKHOLE_H
 #define BLACKHOLE_H
+#include "myobject.h"
 
-
-class Blackhole
+class Blackhole : public Myobject
 {
+    Q_OBJECT
 public:
-    Blackhole();
+    Blackhole(int x, int y);
 };
 
 #endif // BLACKHOLE_H
