@@ -7,7 +7,7 @@ Monster::Monster(int x, int y, QGraphicsItem *doodle) : Myobject(x,y)
     pic.load(":/res/monster.png");
     pic = pic.scaled(w,h,Qt::KeepAspectRatio);
     this->setPixmap(pic);
-    object_type = "Hazard";
+    object_type = "Monster";
     pos_vec = {QPointF(0,0),QPointF(0,30),QPointF(460,0)};
     doo = doodle;
     setZValue(1);

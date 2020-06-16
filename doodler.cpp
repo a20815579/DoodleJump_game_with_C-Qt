@@ -299,7 +299,8 @@ void Doodler::checkCollide() {
                 touchJetpack();
                 break;
             }
-            else if(ptr->object_type == "Hazard" && !is_shild) {
+            else if((ptr->object_type == "Monster" || ptr->object_type == "Blackhole")
+                    && !is_shild) {
                 disconnect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
                 emit gameOverSignal(point);
                 return;
@@ -459,12 +460,35 @@ void Doodler::clickPause() {
         disconnect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
         pause_button->setIcon(play_icon);
         this->clearFocus();
+        disconnect(timer2,SIGNAL(timeout()),this,SLOT(timing()));
+        temp_list = scene()->items();
+        Myobject *my_ptr;
+        QGraphicsItem *item_ptr;
+        for(int i = 0; i < temp_list.length(); i++) {
+            item_ptr = temp_list.at(i);
+            if(item_ptr != this && !pos_vec.contains(item_ptr->scenePos())) {
+                my_ptr = static_cast<Myobject*>(item_ptr);
+                if(my_ptr->object_type == "Monster" || my_ptr->object_type == "Platform")
+                    disconnect(timer,SIGNAL(timeout()),my_ptr,SLOT(repeatMove()));
+            }
+        }
     }
     else {
         is_pause = false;
         connect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
         pause_button->setIcon(pause_icon);
-        this->setFocus();
+        connect(timer2,SIGNAL(timeout()),this,SLOT(timing()));
+        Myobject *my_ptr;
+        QGraphicsItem *item_ptr;
+        for(int i = 0; i < temp_list.length(); i++) {
+            item_ptr = temp_list.at(i);
+            if(item_ptr != this && !pos_vec.contains(item_ptr->scenePos())) {
+                my_ptr = static_cast<Myobject*>(item_ptr);
+                if(my_ptr->object_type == "Monster" || my_ptr->object_type == "Platform")
+                    connect(timer,SIGNAL(timeout()),my_ptr,SLOT(repeatMove()));
+            }
+        }
+        this->setFocus();        
     }
 }
 
