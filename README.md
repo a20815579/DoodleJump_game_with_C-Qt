@@ -12,8 +12,8 @@ At least one another hazard : 黑洞
 Eliminate/Avoid one hazard someway : 當碰到防護罩時，doodler會變成忍者造型，碰到黑洞和怪物都不會死  
 ## Polymorphism
 BluePlatform 和 GrayPlatform 繼承自 GreenPlatform  
-在doodler.cpp 224~233行中，先宣告Greenplatform 的ptr，再根據rand()的結果，決定ptr要指向哪一種Platform  
-在doodler.cpp 252行中，Platform的slot repeatMove()，在class定義中為virtual，GreenPlatform的repeatMove()為空函式，Blue的為左右移動，Gray則是上下移動  
+在doodler.cpp 226~235行中，先宣告Greenplatform 的ptr，再根據rand()的結果，決定ptr要指向哪一種Platform  
+在doodler.cpp 254行中，Platform的slot repeatMove()，在class定義中為virtual，GreenPlatform的repeatMove()為空函式，Blue的為左右移動，Gray則是上下移動  
 ## Bonus
 平台多兩種  道具多一種  怪物有三種  
 左上角有計時功能  
