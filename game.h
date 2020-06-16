@@ -18,7 +18,7 @@ private:
     QPushButton *restart_button;
     QGraphicsProxyWidget *proxy;
     QGraphicsTextItem *point_text, *over_text;
-    int first;
+    bool first = true;
 };
 
 #endif // GAME_H

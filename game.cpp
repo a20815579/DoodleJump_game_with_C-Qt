@@ -19,10 +19,11 @@ Game::Game()
 }
 
 void Game::gameOverSlot(int point) {
+    scene->removeItem(doo);
     delete doo;
     scene->clear();
-
     if(first) {
+        first = false;
         over_text = new QGraphicsTextItem();
         over_text->setPlainText(QString("Game Over"));
         over_text->setFont(QFont("Calibri",40));
@@ -61,7 +62,7 @@ void Game::newGameSlot() {
     scene->removeItem(proxy);
     scene->removeItem(over_text);
     scene->removeItem(point_text);
-
+    disconnect(restart_button,SIGNAL(clicked()),this,SLOT(newGameSlot()));
     doo = new Doodler();
     scene->addItem(doo);
     doo->firstSpawn();

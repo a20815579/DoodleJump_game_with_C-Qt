@@ -41,13 +41,15 @@ Doodler::Doodler()
     pause_button->setGeometry(460,0,40,40);
 
     pos_vec = {QPointF(0,0),QPointF(0,30),QPointF(460,0)};
-    timer2 = new QTimer(this);
+    timer2 = new QTimer();
     connect(timer2,SIGNAL(timeout()),this,SLOT(timing()));
     timer2->start(1000);
 }
 
 Doodler::~Doodler() {
     delete timer;
+    delete timer2;
+    delete time_text;
     delete point_text;
     delete pause_button;
 }
@@ -275,36 +277,38 @@ void Doodler::checkCollide() {
     Myobject *ptr;
     temp_list = this->collidingItems();
     for(int i = 0; i < temp_list.length(); i++) {
-        ptr = static_cast<Myobject*>(temp_list.at(i));
-        if(ptr->object_type == "Spring" && jump_frame > 17
-                && ptr->y() > last_y+75) {
-            stepSpring();
-            break;
-        }
-        else if(ptr->object_type == "Platform" && jump_frame > 17
-           && ptr->y() > last_y+75) {
-            stepPlatform();
-            break;
-        }
-        else if(ptr->object_type == "BrownPlatform" && jump_frame > 17
-           && ptr->y() > last_y+75) {
-            delete ptr;
-        }
-        else if(ptr->object_type == "Jetpack") {
-            scene()->removeItem(ptr);
-            delete ptr;
-            touchJetpack();
-            break;
-        }
-        else if(ptr->object_type == "Hazard" && !is_shild) {
-            disconnect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
-            emit gameOverSignal(point);
-            return;
-        }
-        else if(ptr->object_type == "Shield") {
-            scene()->removeItem(ptr);
-            delete ptr;
-            touchShield();
+        if(!pos_vec.contains(temp_list.at(i)->scenePos())) {
+            ptr = static_cast<Myobject*>(temp_list.at(i));
+            if(ptr->object_type == "Spring" && jump_frame > 17
+                    && ptr->y() > last_y+75) {
+                stepSpring();
+                break;
+            }
+            else if(ptr->object_type == "Platform" && jump_frame > 17
+               && ptr->y() > last_y+75) {
+                stepPlatform();
+                break;
+            }
+            else if(ptr->object_type == "BrownPlatform" && jump_frame > 17
+               && ptr->y() > last_y+75) {
+                delete ptr;
+            }
+            else if(ptr->object_type == "Jetpack") {
+                scene()->removeItem(ptr);
+                delete ptr;
+                touchJetpack();
+                break;
+            }
+            else if(ptr->object_type == "Hazard" && !is_shild) {
+                disconnect(timer,SIGNAL(timeout()),this,SLOT(addJump()));
+                emit gameOverSignal(point);
+                return;
+            }
+            else if(ptr->object_type == "Shield") {
+                scene()->removeItem(ptr);
+                delete ptr;
+                touchShield();
+            }
         }
     }
 }
@@ -415,15 +419,15 @@ void Doodler::createItem() {
 
 void Doodler::decidePlatNum() {
     if(3000 < point && point < 3100)
-        platform_num = 11;
+        platform_num = 13;
     else if(6000 < point && point < 6100)
-        platform_num = 10;
+        platform_num = 12;
     else if(9000 < point && point < 9100)
-        platform_num = 9;
+        platform_num = 11;
     else if(12000 < point && point < 12100)
-        platform_num = 8;
+        platform_num = 10;
     else if(15000 < point && point < 15100)
-        platform_num = 7;
+        platform_num = 9;
 }
 
 int Doodler::countPlatform() {
