@@ -470,6 +470,8 @@ void Doodler::clickPause() {
                 my_ptr = static_cast<Myobject*>(item_ptr);
                 if(my_ptr->object_type == "Monster" || my_ptr->object_type == "Platform")
                     disconnect(timer,SIGNAL(timeout()),my_ptr,SLOT(repeatMove()));
+                else if(my_ptr->object_type == "Bullet")
+                    disconnect(timer,SIGNAL(timeout()),my_ptr,SLOT(fly()));
             }
         }
     }
@@ -486,6 +488,8 @@ void Doodler::clickPause() {
                 my_ptr = static_cast<Myobject*>(item_ptr);
                 if(my_ptr->object_type == "Monster" || my_ptr->object_type == "Platform")
                     connect(timer,SIGNAL(timeout()),my_ptr,SLOT(repeatMove()));
+                else if(my_ptr->object_type == "Bullet")
+                    connect(timer,SIGNAL(timeout()),my_ptr,SLOT(fly()));
             }
         }
         this->setFocus();        
