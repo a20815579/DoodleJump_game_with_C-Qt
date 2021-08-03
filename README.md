@@ -1,6 +1,7 @@
 # 2020-pd2-DoodleJump
 
 ## Video link
+https://www.youtube.com/watch?v=ev0o9-Q7fwk&feature=youtu.be
 ## How to play
 左鍵往左 右鍵往右 空白鍵發射子彈  
 ## Requirements

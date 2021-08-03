@@ -168,8 +168,7 @@ void Doodler::keyPressEvent(QKeyEvent *e)
     switch(e->key()) {
         case Qt::Key_Right :
             this->right = true;
-            break;
-
+            break;        
         case Qt::Key_Left :
             this->left = true;
             break;
